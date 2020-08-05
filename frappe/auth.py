@@ -126,6 +126,9 @@ class LoginManager:
 		# clear cache
 		frappe.clear_cache(user = frappe.form_dict.get('usr'))
 		user, pwd = get_cached_user_pass()
+		if frappe.local.request.method=="OPTIONS":
+			frappe.local.response['http_status_code'] = 200
+			return False
 		self.authenticate(user=user, pwd=pwd)
 		if self.force_user_to_reset_password():
 			doc = frappe.get_doc("User", self.user)
@@ -206,7 +209,6 @@ class LoginManager:
 	def authenticate(self, user=None, pwd=None):
 		if not (user and pwd):
 			user, pwd = frappe.form_dict.get('usr'), frappe.form_dict.get('pwd')
-		if not (user and pwd):
 			self.fail(_('Incomplete login details'), user=user)
 
 		if cint(frappe.db.get_value("System Settings", "System Settings", "allow_login_using_mobile_number")):
