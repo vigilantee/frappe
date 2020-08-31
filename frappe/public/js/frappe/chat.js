@@ -23,7 +23,8 @@ import './utils/user'
  * try
  *      throw new frappe.Error("foobar")
  * catch (e)
- *      console.log(e.name)
+ *
+ *      (e.name)
  * // returns "FrappeError"
  *
  * @see  https://stackoverflow.com/a/32749533
@@ -980,6 +981,8 @@ frappe.chat.message.seen   = (mess, user) => {
 
 frappe.provide('frappe.chat.message.on')
 frappe.chat.message.on.create = function (fn) {
+	console.log("frappe.chat.message.on.create");
+	console.log(fn);
 	frappe.realtime.on("frappe.chat.message:create", r =>
 		fn({ ...r, creation: new frappe.datetime.datetime(r.creation) })
 	)
@@ -1469,17 +1472,6 @@ class extends Component {
 							seen: update.seen
 						}
 
-						const me = last_message.user === frappe.session.user
-						const seen = Array.from(new Set([...update.seen, frappe.session.user]));
-						const users = Array.from(new Set([...r.users, r.owner]));
-						const read = !frappe._.is_empty(seen) && seen.length === users.length;
-
-						const item = document.getElementById(last_message.name);
-						const is_check_added = item.nextSibling.innerHTML;
-						if(me && read && !is_check_added) {
-							item.nextSibling.innerHTML = `<i type="check" class="octicon octicon-check"></i>`;
-						}
-
 						return { ...r, last_message: last_message };
 					}
 
@@ -1513,8 +1505,6 @@ class extends Component {
 					} else
 						update.typing = frappe._.as_array(update.typing)
 
-					room  = { ...state.room, ...update }
-				} else if ( update.typing === null ) {
 					room  = { ...state.room, ...update }
 				}
 
@@ -1609,6 +1599,8 @@ class extends Component {
 				setTimeout(() => this.room.update(room, { typing: null }), 5000)
 			}
 		})
+
+		console.log("binding");
 		frappe.chat.message.on.create((r) => {
 			const { state } = this
 
@@ -2082,6 +2074,9 @@ class extends Component {
 			h("li", null,
 				h("a", { class: props.active ? "active": "", onclick: () => {
 					props.click(props);
+					// if (props.last_message) {
+					// 	frappe.chat.message.seen(props.last_message.name);
+					// }
 				} },
 					h("div", { class: "row" },
 						h("div", { class: "col-xs-9" },
