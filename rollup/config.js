@@ -6,6 +6,8 @@ const log = console.log; // eslint-disable-line
 const multi_entry = require('rollup-plugin-multi-entry');
 const commonjs = require('rollup-plugin-commonjs');
 const node_resolve = require('rollup-plugin-node-resolve');
+const builtins = require('rollup-plugin-node-builtins');
+const globals = require('rollup-plugin-node-globals');
 const postcss = require('rollup-plugin-postcss');
 const buble = require('rollup-plugin-buble');
 const { terser } = require('rollup-plugin-terser');
@@ -71,7 +73,7 @@ function get_rollup_options_for_js(output_file, input_files) {
 		}),
 		commonjs(),
 		globals(),
-		builtins(),
+    	builtins(),
 		production && terser()
 	];
 
