@@ -2269,9 +2269,9 @@ class extends Component {
 								class: "dropdown-toggle frappe-chat-toggle",
 								style: { "font-size": "9px" },
 								onclick: () => {
-									var expandButton = document.getElementsByClassName("btn-action")[1];
+									var expandButton = document.getElementById("resize_button");
 									expandButton.click();
-									var chatButtonToggle = document.getElementsByClassName("frappe-chat-toggle")[0];
+									var chatButtonToggle = document.getElementById("chat_toggle_navbar");
 									chatButtonToggle.click();
 								}
 								}, "X"),
