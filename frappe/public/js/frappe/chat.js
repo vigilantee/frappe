@@ -975,6 +975,7 @@ frappe.chat.message.sort   = (messages) => {
  * @description Add user to seen (defaults to session.user)
  */
 frappe.chat.message.seen   = (mess, user) => {
+	console.log("called seen event...", mess, user);
 	frappe.call('frappe.chat.doctype.chat_message.chat_message.seen',
 		{ message: mess, user: user || frappe.session.user })
 }
@@ -1452,6 +1453,7 @@ class extends Component {
 					}
 
 					if(update.seen) {
+						console.log("inside update seen......1455", update);
 						const last_message = {
 							...r.last_message,
 							seen: update.seen
@@ -1494,8 +1496,8 @@ class extends Component {
 						...state.room.last_message,
 						seen: update.seen
 					}
-
-					room = { ...state.room, last_message: last_message };
+					console.log("update.seen is true here ......1494", last_message, state.room, update);
+					room = { ...state.room, last_message };
 				}
 
 				this.set_state({ room })
@@ -1567,6 +1569,7 @@ class extends Component {
 
 		frappe.chat.room.on.update((room, update) => {
 			frappe.log.warn(`TRIGGER: Chat Room ${room} update ${JSON.stringify(update)} recieved.`)
+			console.log("triggering here....1571");
 			this.room.update(room, update)
 		})
 
@@ -1582,7 +1585,6 @@ class extends Component {
 		console.log("binding");
 		frappe.chat.message.on.create((r) => {
 			const { state } = this
-
 			// play sound.
 			if ( state.room.name )
 				state.profile.conversation_tones && frappe.chat.sound.play('message')
@@ -1618,8 +1620,14 @@ class extends Component {
 
 			if ( r.room === state.room.name ) {
 				const mess  = frappe._.copy_array(state.room.messages)
-				mess.push(r)
-
+				if(r.user !== frappe.session.user) {
+					r.seen=[...r.seen, frappe.session.user];
+					console.log("r is...", r);
+					// TODO call a global event that triggers in all the chat window currently this doesn't trigger
+					frappe.chat.message.seen(r);
+					// frappe.realtime.publish("frappe.chat.message:seen", { message: r, user: user || frappe.session.user })
+				}
+				mess.push(r);
 				this.set_state({ room: { ...state.room, messages: mess } })
 			}
 		})
@@ -1627,6 +1635,7 @@ class extends Component {
 		frappe.chat.message.on.update((message, update) => {
 			const { state } = this
 			frappe.log.warn(`TRIGGER: Chat Message ${message} update ${JSON.stringify(update)} recieved.`)
+			console.log(`TRIGGER: Chat Message ${message} update ${JSON.stringify(update)} recieved.`)
 			if(state.room.name) {
 				this.room.update(state.room.name, update);
 			}
@@ -1933,6 +1942,7 @@ class extends Component {
 						onclick: () => {
 							const span = !state.span
 							me.set_state({ span })
+							console.log("span is.....", props.span, span, me)
 							props.span(span)
 						}
 					})
@@ -2023,8 +2033,8 @@ class extends Component {
 
 			if ( !frappe._.is_empty(props.typing) )
 				item.subtitle = 'typing...'
-			else
-			if ( props.last_message ) {
+			else if ( props.last_message ) {
+				console.log("last message is.....2029   ", props.last_message)
 				const message = props.last_message
 				const content = message.content
 
@@ -2372,6 +2382,19 @@ class extends Component {
 	}
 }
 
+const isRead = (seen, roomMembers) => {
+	if(!roomMembers) return false;
+	let readByAll = true;
+	for(let i=0; i<roomMembers.length; i++) {
+		let member = roomMembers[i];
+		if(frappe._.is_empty(seen) || !seen.includes(member)) {
+			readByAll=false;
+			break;
+		}
+	}
+	return readByAll;
+}
+
 /**
  * @description ChatList.Item Component
  *
@@ -2392,7 +2415,6 @@ class extends Component {
 
 		const me        = props.user === frappe.session.user
 		const content   = props.content
-
 		return (
 			h("div",{class: "chat-list-item list-group-item"},
 				props.type === "Notification" ?
@@ -2437,6 +2459,7 @@ class extends Component {
 	}
 
 	onclick ( ) {
+		console.log("onclick of this side.....2443");
 		const { props } = this
 		if ( props.user === frappe.session.user ) {
 			frappe.quick_edit("Chat Message", props.name, (values) => {
@@ -2450,10 +2473,18 @@ class extends Component {
 		const creation 	= props.creation.format('hh:mm A')
 
 		const me        = props.user === frappe.session.user
-		const read      = !frappe._.is_empty(props.seen) && !props.seen.includes(frappe.session.user)
-
+		let read = false;
 		const content   = props.content
 
+		frappe.chat.room.get(props.room).then((room)=>{
+			const chatMembers = [...room.users, room.owner];
+			read=isRead(props.seen, chatMembers);
+			if(read)
+			{
+				document.getElementById(props.name).innerHTML = `<i type="check" class="octicon octicon-check"></i>`;
+			}
+				
+		});
 		return (
 			h("div",{class:`chat-bubble ${props.groupable ? "chat-groupable" : ""} chat-bubble-${me ? "r" : "l"}`,
 				onclick: this.onclick},
@@ -2475,13 +2506,15 @@ class extends Component {
 				),
 				h("div",{class:"chat-bubble-meta"},
 					h("span",{class:"chat-bubble-creation"},creation),
-					me && read ?
-						h("span",{class:"chat-bubble-check"},
-							h(frappe.components.Octicon,{type:"check"})
-						) : null
+					h("span",{
+						class:"chat-bubble-check",
+						id: props.name,
+					})
 				)
 			)
-		)
+		);
+
+		
 	}
 }
 
