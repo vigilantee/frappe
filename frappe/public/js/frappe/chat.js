@@ -1457,6 +1457,10 @@ class extends Component {
 							seen: update.seen
 						}
 
+						let item = document.getElementById(last_message.name)
+						if(last_message.user === frappe.session.user)
+							item.innerHTML = `<i type="check" class="octicon octicon-check"></i>`;
+
 						return { ...r, last_message: last_message };
 					}
 
@@ -2450,7 +2454,8 @@ class extends Component {
 		const creation 	= props.creation.format('hh:mm A')
 
 		const me        = props.user === frappe.session.user
-		const read      = !frappe._.is_empty(props.seen) && !props.seen.includes(frappe.session.user)
+		let seen = Array.from(new Set(props.seen))
+		const read      = !frappe._.is_empty(seen) && !(seen.length===1);
 
 		const content   = props.content
 
@@ -2474,7 +2479,10 @@ class extends Component {
 						)
 				),
 				h("div",{class:"chat-bubble-meta"},
-					h("span",{class:"chat-bubble-creation"},creation),
+					h("span",{
+						class:"chat-bubble-creation",
+						id: props.name
+					},creation),
 					me && read ?
 						h("span",{class:"chat-bubble-check"},
 							h(frappe.components.Octicon,{type:"check"})
