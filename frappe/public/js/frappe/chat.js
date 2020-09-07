@@ -1413,8 +1413,27 @@ class extends Component {
 
 	setup (props) {
 		// room actions
+		this.isUnreadMessages = function(rooms) {
+			let is_unread = false;
+			rooms.map(room => {
+					if(room.last_message && room.last_message.user != frappe.session.user && !room.last_message.seen.includes(frappe.session.user))
+						is_unread = true;
+			})
+			const unreadMessageIndicator = document.getElementById("unread_message_indicator");
+			if(is_unread) {
+				console.log("adding child");
+				unreadMessageIndicator.style.display = "inline";
+			}
+			else {
+				console.log("removing child");
+				unreadMessageIndicator.style.display = "none";
+				// chatNavbarItem.removeChild(unreadMessageIndicator);
+			}
+		}
 		this.room           = { }
 		this.room.add       = rooms => {
+			// unread messages for each room being checked
+			this.isUnreadMessages(rooms);
 			rooms           = frappe._.as_array(rooms)
 			const names     = rooms.map(r => r.name)
 
@@ -1434,6 +1453,7 @@ class extends Component {
 		this.room.update    = (room, update) => {
 			const { state } = this
 			var   exists    = false
+			this.isUnreadMessages(state.rooms);
 			const rooms     = state.rooms.map(r => {
 				if ( r.name === room ) {
 					exists  = true
@@ -1473,7 +1493,10 @@ class extends Component {
 
 			if ( frappe.session.user !== 'Guest' ) {
 				if ( !exists )
-					frappe.chat.room.get(room, (room) => this.room.add(room))
+					frappe.chat.room.get(room, (room) => {
+						this.room.add(room)
+						isUnreadMessages(room)
+					})
 				else
 					this.set_state({ rooms })
 			}
@@ -2062,7 +2085,10 @@ class extends Component {
 						h("div", { class: "col-xs-3 text-right" },
 							[
 								h("div", { class: "text-muted", style: { "font-size": "9px" } }, item.timestamp),
-								is_unread ? h("span", { class: "indicator red" }) : null
+								is_unread ? h("span", {
+									class: "indicator red",
+									id: "red_dot"
+								}) : null
 							]
 						),
 					)
@@ -2739,6 +2765,9 @@ frappe.chat.render = (render = true, force = false) =>
 					<div>
 						<i class="octicon octicon-comment-discussion"/>
 					</div>
+					<span class="notifications-indicator" style="display: none; color: red;" id="unread_message_indicator">
+						<i class="fa fa-circle"></i>
+					</span>
 				</a>
 			`)
 
