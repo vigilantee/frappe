@@ -80,6 +80,7 @@ function get_rollup_options_for_js(output_file, input_files) {
 			input: input_files,
 			plugins: plugins,
 			context: 'window',
+			shimMissingExports: true,
 			external: ['jquery'],
 			onwarn({ code, message, loc, frame }) {
 				// skip warnings

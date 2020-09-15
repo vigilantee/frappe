@@ -69,14 +69,14 @@ frappe.ui.Page = Class.extend({
 		$(frappe.render_template("page", {})).appendTo(this.wrapper);
 		if(this.single_column) {
 			// nesting under col-sm-12 for consistency
-			this.add_view("main", '<div class="row layout-main">\
+			this.add_view("main", '<div class="row layout-main" id="content-row">\
 					<div class="col-md-12 layout-main-section-wrapper">\
 						<div class="layout-main-section"></div>\
 						<div class="layout-footer hide"></div>\
 					</div>\
 				</div>');
 		} else {
-			this.add_view("main", '<div class="row layout-main">\
+			this.add_view("main", '<div class="row layout-main" id="content-row">\
 				<div class="col-md-2 layout-side-section"></div>\
 				<div class="col-md-10 layout-main-section-wrapper">\
 					<div class="layout-main-section"></div>\
