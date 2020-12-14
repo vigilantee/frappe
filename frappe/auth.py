@@ -209,6 +209,7 @@ class LoginManager:
 	def authenticate(self, user=None, pwd=None):
 		if not (user and pwd):
 			user, pwd = frappe.form_dict.get('usr'), frappe.form_dict.get('pwd')
+		if not (user and pwd):
 			self.fail(_('Incomplete login details'), user=user)
 
 		if cint(frappe.db.get_value("System Settings", "System Settings", "allow_login_using_mobile_number")):

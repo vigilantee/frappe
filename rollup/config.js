@@ -14,8 +14,6 @@ const { terser } = require('rollup-plugin-terser');
 const vue = require('rollup-plugin-vue');
 const frappe_html = require('./frappe-html-plugin');
 const less_loader = require('./less-loader');
-const builtins = require('rollup-plugin-node-builtins');
-const globals = require('rollup-plugin-node-globals');
 
 const production = process.env.FRAPPE_ENV === 'production';
 
