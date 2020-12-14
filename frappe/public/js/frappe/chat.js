@@ -2269,12 +2269,12 @@ class extends Component {
 								class: "dropdown-toggle frappe-chat-toggle",
 								style: { "font-size": "9px" },
 								onclick: () => {
-									var expandButton = document.getElementById("resize_button");
+									var expandButton = document.getElementsByClassName("btn-action")[1];
 									expandButton.click();
-									var chatButtonToggle = document.getElementById("chat_toggle_navbar");
+									var chatButtonToggle = document.getElementsByClassName("frappe-chat-toggle")[0];
 									chatButtonToggle.click();
 								}
-								}, h(frappe.components.Octicon, { type: "x" })),
+								}, "X"),
 						h("div", { class: "vcenter" },
 							h("div", { class: "text-center text-extra-muted" },
 								h(frappe.components.Octicon, { type: "comment-discussion", style: "font-size: 125px" }),
